@@ -1,17 +1,24 @@
 export interface WebhookRequest {
-  messages: Message[];
-  currentMessage: string;
+  id: string;
+  content: string;
 }
 
 export interface WebhookResponse {
   success: boolean;
-  data?: {
-    output: string;
-  };
+  data?: Array<{
+    output: {
+      cvf: number;
+      chat: string;
+      risks: number;
+      schein: number;
+      strengths: number;
+      overall_score: number;
+    };
+  }>;
   error?: string;
 }
 
-export const callWebhook = async (messages: Message[], currentMessage: string): Promise<WebhookResponse> => {
+export const callWebhook = async (id: string, content: string): Promise<WebhookResponse> => {
   const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
 
   if (!webhookUrl) {
@@ -19,8 +26,8 @@ export const callWebhook = async (messages: Message[], currentMessage: string): 
   }
 
   const requestBody: WebhookRequest = {
-    messages,
-    currentMessage,
+    id,
+    content,
   };
 
   try {

@@ -1,5 +1,5 @@
 import { Bot, Loader2, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { callWebhook } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,15 @@ const ChatInterface = () => {
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async () => {
     if (!message.trim() || isLoading) return;
@@ -23,17 +32,17 @@ const ChatInterface = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const currentMessage = message;
     setMessage("");
     setIsLoading(true);
 
-    const result = await callWebhook([...messages, userMessage], currentMessage);
+    const result = await callWebhook("1b187f6288e948839f63e554d9671600", userMessage.content);
 
     if (result.success) {
+      const chatContent = result.data?.[0]?.output?.chat || "No response received";
       const assistantMessage: Message = {
         id: messages.length + 2,
         role: "assistant",
-        content: JSON.stringify(result.data, null, 2),
+        content: chatContent,
         createdAt: new Date().toISOString(),
       };
 
@@ -87,6 +96,7 @@ const ChatInterface = () => {
               </span>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <form
           onSubmit={(e) => {
