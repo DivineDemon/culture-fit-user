@@ -1,5 +1,7 @@
-import { Bot, Send } from "lucide-react";
+import { Bot, Loader2, Send } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { callWebhook } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import MaxWidthWrapper from "./max-width-wrapper";
 import { Button } from "./ui/button";
@@ -7,27 +9,49 @@ import { Input } from "./ui/input";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      role: "assistant",
-      content: "Hello, how can I help you today?",
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      role: "user",
-      content: "I have a question about the product",
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = () => {
-    setMessages([
-      ...messages,
-      { id: messages.length + 1, role: "user", content: message, createdAt: new Date().toISOString() },
-    ]);
+  const handleSubmit = async () => {
+    if (!message.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: messages.length + 1,
+      role: "user",
+      content: message,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    const currentMessage = message;
     setMessage("");
+    setIsLoading(true);
+
+    const result = await callWebhook([...messages, userMessage], currentMessage);
+
+    if (result.success) {
+      const assistantMessage: Message = {
+        id: messages.length + 2,
+        role: "assistant",
+        content: JSON.stringify(result.data, null, 2),
+        createdAt: new Date().toISOString(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+      toast.success("Message sent successfully!");
+    } else {
+      const errorMessage: Message = {
+        id: messages.length + 2,
+        role: "assistant",
+        content: `Error: ${result.error}`,
+        createdAt: new Date().toISOString(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+      toast.error(`Failed to send message: ${result.error}`);
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -76,9 +100,10 @@ const ChatInterface = () => {
             placeholder="Type your message here..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            disabled={isLoading}
           />
-          <Button type="submit" size="icon" variant="outline">
-            <Send />
+          <Button type="submit" size="icon" variant="outline" disabled={isLoading || !message.trim()}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
           </Button>
         </form>
       </div>
