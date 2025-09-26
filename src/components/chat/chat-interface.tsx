@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { callWebhook } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, parseApiMessage } from "@/lib/utils";
+import { useGetChatQuery } from "@/store/services/chat";
 import type { RootState } from "@/types/global";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
@@ -11,23 +12,40 @@ import { Textarea } from "../ui/textarea";
 const ChatInterface = () => {
   const [message, setMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [messages, setMessages] = useState<ParsedMessage[]>([]);
   const { user, chat_session_id } = useSelector((state: RootState) => state.global);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const { data } = useGetChatQuery(chat_session_id, {
+    skip: !chat_session_id,
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
-    scrollToBottom();
+    setMessages([]);
+
+    if (data && data.length > 0) {
+      const allParsedMessages: ParsedMessage[] = [];
+
+      data.forEach((apiMessage: Message) => {
+        const parsedMessages = parseApiMessage(apiMessage);
+        allParsedMessages.push(...parsedMessages);
+      });
+
+      allParsedMessages.sort((a, b) => a.id - b.id);
+      setMessages(allParsedMessages);
+    }
+  }, [data, chat_session_id]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSubmit = async () => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || loading) return;
 
-    const userMessage: Message = {
-      id: messages.length + 1,
+    const userMessage: ParsedMessage = {
+      id: Date.now(),
       role: "user",
       content: message,
       createdAt: new Date().toISOString(),
@@ -35,14 +53,14 @@ const ChatInterface = () => {
 
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
-    setIsLoading(true);
+    setLoading(true);
 
     const result = await callWebhook(chat_session_id, userMessage.content, user?.company_id || "");
 
     if (result.success) {
       const chatContent = result.data?.[0]?.output?.chat || "No response received";
-      const assistantMessage: Message = {
-        id: messages.length + 2,
+      const assistantMessage: ParsedMessage = {
+        id: Date.now() + 1,
         role: "assistant",
         content: chatContent,
         createdAt: new Date().toISOString(),
@@ -51,8 +69,8 @@ const ChatInterface = () => {
       setMessages((prev) => [...prev, assistantMessage]);
       toast.success("Message sent successfully!");
     } else {
-      const errorMessage: Message = {
-        id: messages.length + 2,
+      const errorMessage: ParsedMessage = {
+        id: Date.now() + 1,
         role: "assistant",
         content: `Error: ${result.error}`,
         createdAt: new Date().toISOString(),
@@ -62,7 +80,7 @@ const ChatInterface = () => {
       toast.error(`Failed to send message: ${result.error}`);
     }
 
-    setIsLoading(false);
+    setLoading(false);
   };
 
   return (
@@ -111,10 +129,10 @@ const ChatInterface = () => {
           placeholder="Type your message here..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          disabled={isLoading}
+          disabled={loading}
         />
-        <Button type="submit" size="icon" variant="outline" disabled={isLoading || !message.trim()}>
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+        <Button type="submit" size="icon" variant="outline" disabled={loading || !message.trim()}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
         </Button>
       </form>
     </div>

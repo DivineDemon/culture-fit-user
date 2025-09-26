@@ -29,7 +29,7 @@ export const chatApi = api.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["Chat"],
-      transformResponse: (response: Chat) => response,
+      transformResponse: (response: GetChat) => response.ai_results,
     }),
     updateChat: build.mutation({
       query: (chat: Chat) => ({

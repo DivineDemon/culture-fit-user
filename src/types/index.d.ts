@@ -1,8 +1,7 @@
 declare type Message = {
   id: number;
-  content: string;
-  createdAt: string;
-  role: "user" | "assistant";
+  message: string;
+  session_id: string;
 };
 
 declare type GlobalState = {
@@ -39,4 +38,22 @@ declare type LoginResponse = {
   employee_id: string;
   role: string;
   company_id: string;
+};
+
+declare type GetChat = {
+  session_id: string;
+  user_id: string;
+  summary: string;
+  topic: string;
+  start_time: string;
+  end_time: string;
+  created_at: string;
+  ai_results: Message[];
+};
+
+declare type ParsedMessage = {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
 };
