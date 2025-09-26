@@ -5,15 +5,15 @@ import { toast } from "sonner";
 import { callWebhook } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/types/global";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { chat_session_id } = useSelector((state: RootState) => state.global);
+  const { user, chat_session_id } = useSelector((state: RootState) => state.global);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,7 +37,7 @@ const ChatInterface = () => {
     setMessage("");
     setIsLoading(true);
 
-    const result = await callWebhook(chat_session_id, userMessage.content);
+    const result = await callWebhook(chat_session_id, userMessage.content, user?.company_id || "");
 
     if (result.success) {
       const chatContent = result.data?.[0]?.output?.chat || "No response received";
@@ -67,7 +67,7 @@ const ChatInterface = () => {
 
   return (
     <div className="flex h-full w-full flex-col items-start justify-start gap-5 p-5">
-      <div className="flex h-[calc(100vh-160px)] w-full flex-col items-start justify-start gap-5 overflow-y-auto rounded-xl border p-5 shadow">
+      <div className="flex h-[calc(100vh-220px)] w-full flex-col items-start justify-start gap-5 overflow-y-auto rounded-xl border p-5 shadow">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -104,10 +104,10 @@ const ChatInterface = () => {
           e.preventDefault();
           handleSubmit();
         }}
-        className="flex w-full items-center justify-center gap-2.5"
+        className="flex w-full items-start justify-start gap-2.5"
       >
-        <Input
-          className="flex-1"
+        <Textarea
+          className="h-24 flex-1"
           placeholder="Type your message here..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}

@@ -1,6 +1,7 @@
 export interface WebhookRequest {
   id: string;
   content: string;
+  company_id: string;
 }
 
 export interface WebhookResponse {
@@ -18,7 +19,7 @@ export interface WebhookResponse {
   error?: string;
 }
 
-export const callWebhook = async (id: string, content: string): Promise<WebhookResponse> => {
+export const callWebhook = async (id: string, content: string, company_id: string): Promise<WebhookResponse> => {
   const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
 
   if (!webhookUrl) {
@@ -28,6 +29,7 @@ export const callWebhook = async (id: string, content: string): Promise<WebhookR
   const requestBody: WebhookRequest = {
     id,
     content,
+    company_id,
   };
 
   try {

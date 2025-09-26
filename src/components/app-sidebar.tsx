@@ -1,35 +1,43 @@
-import { Loader2, MessageCircle, Plus, Trash } from "lucide-react";
+import { ChevronUp, Loader2, MessageCircle, Plus, User2 } from "lucide-react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import Logo from "@/assets/img/logo.jpg";
 import { cn } from "@/lib/utils";
-import { useDeleteChatMutation, useGetChatsQuery, usePostChatMutation } from "@/store/services/chat";
-import { setChatSessionId } from "@/store/slices/global";
+import { useGetChatsQuery, usePostChatMutation } from "@/store/services/chat";
+import { setChatSessionId, setUser } from "@/store/slices/global";
 import type { RootState } from "@/types/global";
 import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
+import WarningModal from "./warning-modal";
 
 const AppSidebar = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { data } = useGetChatsQuery({});
+  const [open, setOpen] = useState<boolean>(false);
   const [createChat, { isLoading }] = usePostChatMutation();
-  const [deleteChat, { isLoading: isDeleting }] = useDeleteChatMutation();
   const { chat_session_id } = useSelector((state: RootState) => state.global);
 
   const handleCreateChat = async () => {
     const response = await createChat({
-      topic: "New Chat",
-      summary: "New Chat",
       end_time: new Date().toISOString(),
       start_time: new Date().toISOString(),
+      summary: "Employee Culture Assessment",
+      topic: `Chat ${new Date().toISOString()}`,
     });
 
     if (response.data) {
@@ -38,54 +46,88 @@ const AppSidebar = () => {
     }
   };
 
-  const handleDeleteChat = async (session_id: string) => {
-    const response = await deleteChat(session_id);
+  const logout = () => {
+    dispatch(setUser(null));
+    dispatch(setChatSessionId(""));
 
-    if (response.data) {
-      toast.success("Chat deleted successfully!");
-    }
+    navigate("/");
+    toast.success("Logged out successfully!");
   };
 
   return (
-    <Sidebar>
-      <SidebarContent className="p-0">
-        <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="h-fit p-0">
-            <div className="flex w-full items-center justify-center border-b p-2.5">
-              <span className="flex-1 text-left">Chats</span>
-              <Button type="button" size="icon" variant="outline" onClick={handleCreateChat}>
-                {isLoading ? <Loader2 className="animate-spin" /> : <Plus />}
-              </Button>
+    <>
+      <Sidebar>
+        <SidebarHeader className="p-0">
+          <div className="flex h-16 w-full items-center justify-center gap-2.5 border-b p-2.5">
+            <div className="flex flex-1 items-center justify-start gap-2.5">
+              <img src={Logo} alt="logo" className="size-9 rounded-md object-cover" />
+              <div className="flex flex-1 flex-col items-center justify-center gap-1.5">
+                <span className="w-full text-left font-semibold text-[14px] capitalize leading-[14px]">
+                  Culture Fit
+                </span>
+                <span className="w-full text-left text-[12px] text-muted-foreground leading-[12px]">
+                  Culture Assesment
+                </span>
+              </div>
             </div>
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="p-0">
-            <SidebarMenu className="p-0">
-              {data?.map((chat) => (
-                <SidebarMenuItem key={chat.session_id} className="p-2.5">
-                  <SidebarMenuButton
-                    asChild
-                    className={cn("h-fit cursor-pointer p-2.5", {
-                      "bg-accent": chat.session_id === chat_session_id,
-                    })}
-                    onClick={() => dispatch(setChatSessionId(chat.session_id))}
-                  >
-                    <div className="flex w-full items-center justify-center gap-2.5">
-                      <div className="flex flex-1 items-center justify-center gap-2.5">
-                        <MessageCircle className="size-4" />
-                        <span className="flex-1 text-left capitalize">{chat.topic}</span>
-                      </div>
-                      <Button size="icon" variant="destructive" onClick={() => handleDeleteChat(chat.session_id)}>
-                        {isDeleting ? <Loader2 className="animate-spin" /> : <Trash />}
-                      </Button>
-                    </div>
+            <Button size="icon" variant="outline" className="shrink-0" onClick={handleCreateChat}>
+              {isLoading ? <Loader2 className="animate-spin" /> : <Plus />}
+            </Button>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Chats</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {data?.map((chat) => (
+                  <SidebarMenuItem key={chat.session_id}>
+                    <SidebarMenuButton
+                      className={cn("", {
+                        "bg-accent": chat.session_id === chat_session_id,
+                      })}
+                      onClick={() => dispatch(setChatSessionId(chat.session_id))}
+                    >
+                      <MessageCircle className="size-4" />
+                      <span className="flex-1 text-left">{chat.topic}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter className="border-t">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    <User2 /> supame123@gmail.com
+                    <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="top" align="end" className="w-[--radix-popper-anchor-width]">
+                  <DropdownMenuItem>
+                    <Link to="/account">Account</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <WarningModal
+        open={open}
+        title="Are you sure?"
+        text="You'll be signed out of your account."
+        setOpen={setOpen}
+        cta={logout}
+      />
+    </>
   );
 };
 

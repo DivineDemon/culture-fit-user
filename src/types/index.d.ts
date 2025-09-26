@@ -6,8 +6,8 @@ declare type Message = {
 };
 
 declare type GlobalState = {
-  token: string;
   chat_session_id: string;
+  user: LoginResponse | null;
 };
 
 declare type Chat = {
@@ -25,4 +25,18 @@ declare type PostChat = {
   topic: string;
   start_time: string;
   end_time: string;
+};
+
+declare type Login = {
+  email: string;
+  password: string;
+}
+
+declare type LoginResponse = {
+  access_token: string;
+  refresh_token: string;
+  user_id: string;
+  employee_id: string;
+  role: string;
+  company_id: string;
 };

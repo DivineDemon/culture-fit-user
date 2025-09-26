@@ -1,16 +1,21 @@
-import AppSidebar from "./components/app-sidebar";
-import ChatInterface from "./components/chat-interface";
-import Navbar from "./components/navbar";
+import { Route, Routes } from "react-router-dom";
+import AuthLayout from "./components/layouts/auth-layout";
+import GlobalLayout from "./components/layouts/global-layout";
+import Account from "./pages/account";
+import Chat from "./pages/chat";
+import Login from "./pages/login";
 
 const App = () => {
   return (
-    <div className="flex h-screen w-full flex-row items-start justify-start">
-      <AppSidebar />
-      <div className="flex flex-1 flex-col items-start justify-start">
-        <Navbar />
-        <ChatInterface />
-      </div>
-    </div>
+    <Routes>
+      <Route element={<AuthLayout />}>
+        <Route index element={<Login />} />
+      </Route>
+      <Route element={<GlobalLayout />}>
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/account" element={<Account />} />
+      </Route>
+    </Routes>
   );
 };
 
