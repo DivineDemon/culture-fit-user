@@ -1,9 +1,10 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useDeleteChatMutation } from "@/store/services/chat";
+import { setChatSessionId } from "@/store/slices/global";
 import type { RootState } from "@/types/global";
 import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
@@ -11,6 +12,7 @@ import { SidebarTrigger } from "./ui/sidebar";
 import WarningModal from "./warning-modal";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
   const { pathname } = useLocation();
   const [open, setOpen] = useState<boolean>(false);
   const [deleteChat, { isLoading }] = useDeleteChatMutation();
@@ -20,6 +22,7 @@ const Navbar = () => {
     const response = await deleteChat(chat_session_id);
 
     if (response.data) {
+      dispatch(setChatSessionId(""));
       toast.success("Chat deleted successfully!");
     } else {
       toast.error("Failed to delete chat!");
