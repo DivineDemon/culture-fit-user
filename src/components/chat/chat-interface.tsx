@@ -9,6 +9,14 @@ import type { RootState } from "@/types/global";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 
+interface ParsedMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
+  isLoading?: boolean;
+}
+
 const ChatInterface = () => {
   const [message, setMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,6 +60,16 @@ const ChatInterface = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    const loadingMessage: ParsedMessage = {
+      id: Date.now() + 1,
+      role: "assistant",
+      content: "",
+      createdAt: new Date().toISOString(),
+      isLoading: true,
+    };
+    setMessages((prev) => [...prev, loadingMessage]);
+
     setMessage("");
     setLoading(true);
 
@@ -64,9 +82,10 @@ const ChatInterface = () => {
         role: "assistant",
         content: chatContent,
         createdAt: new Date().toISOString(),
+        isLoading: false,
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => prev.map((msg) => (msg.id === loadingMessage.id ? assistantMessage : msg)));
       toast.success("Message sent successfully!");
     } else {
       const errorMessage: ParsedMessage = {
@@ -74,9 +93,10 @@ const ChatInterface = () => {
         role: "assistant",
         content: `Error: ${result.error}`,
         createdAt: new Date().toISOString(),
+        isLoading: false,
       };
 
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => prev.map((msg) => (msg.id === loadingMessage.id ? errorMessage : msg)));
       toast.error(`Failed to send message: ${result.error}`);
     }
 
@@ -111,7 +131,21 @@ const ChatInterface = () => {
                 "order-1 bg-primary text-right text-white dark:text-black": message.role === "user",
               })}
             >
-              {message.content}
+              {message.isLoading ? (
+                <div className="flex items-center gap-2 p-2.5">
+                  <div className="size-1.5 animate-[fadeDots_0.8s_infinite] rounded-full bg-white shadow-dot" />
+                  <div
+                    className="size-1.5 animate-[fadeDots_0.8s_infinite] rounded-full bg-white shadow-dot"
+                    style={{ animationDelay: "0.1s" }}
+                  />
+                  <div
+                    className="size-1.5 animate-[fadeDots_0.8s_infinite] rounded-full bg-white shadow-dot"
+                    style={{ animationDelay: "0.3s" }}
+                  />
+                </div>
+              ) : (
+                message.content
+              )}
             </span>
           </div>
         ))}
