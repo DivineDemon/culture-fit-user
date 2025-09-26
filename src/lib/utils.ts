@@ -7,11 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function parseApiMessage(apiMessage: Message): ParsedMessage[] {
   try {
-    // The message format uses curly braces instead of square brackets
-    // We need to convert it to a proper JSON array format
     let messageString = apiMessage.message;
 
-    // Replace the outer curly braces with square brackets to make it a valid JSON array
     if (messageString.startsWith("{") && messageString.endsWith("}")) {
       messageString = messageString.replace(/^\{/, "[").replace(/\}$/, "]");
     }
@@ -32,7 +29,6 @@ export function parseApiMessage(apiMessage: Message): ParsedMessage[] {
     }
 
     if (aiResponse) {
-      // Check if aiResponse is a string that needs to be parsed
       let chatContent = null;
       if (typeof aiResponse === "string") {
         try {
