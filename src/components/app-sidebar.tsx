@@ -1,4 +1,4 @@
-import { ChevronUp, Loader2, MessageCircle, Plus, User2 } from "lucide-react";
+import { ChevronUp, Loader2, LogOut, MessageCircle, Plus, Settings, User2 } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -103,15 +103,23 @@ const AppSidebar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
-                    <User2 /> supame123@gmail.com
+                    <span className="flex w-fit items-end rounded-full bg-primary p-2">
+                      <User2 className="size-4" />
+                    </span>
+                    {/* supame123@gmail.com */}
+                    {data?.[0]?.user_id}
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="top" align="end" className="w-[--radix-popper-anchor-width]">
                   <DropdownMenuItem>
-                    <Link to="/account">Account</Link>
+                    <Link to="/account" className="flex items-center">
+                      <Settings className="mr-2.5 h-4 w-4" />
+                      Account
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
+                    <LogOut className="ml-0.5 h-4 w-4" />
                     <span>Sign out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
