@@ -89,7 +89,7 @@ const AppSidebar = () => {
                       onClick={() => dispatch(setChatSessionId(chat.session_id))}
                     >
                       <MessageCircle className="size-4" />
-                      <span className="flex-1 text-left">{chat.topic}</span>
+                      <span className="flex-1 text-left">{chat.summary}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -106,8 +106,7 @@ const AppSidebar = () => {
                     <span className="flex w-fit items-end rounded-full bg-primary p-2">
                       <User2 className="size-4" />
                     </span>
-                    {/* supame123@gmail.com */}
-                    {data?.[0]?.user_id}
+                    {data?.[0]?.user?.full_name}
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>

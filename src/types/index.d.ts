@@ -9,6 +9,10 @@ declare type GlobalState = {
   user: LoginResponse | null;
 };
 
+declare type Detail = {
+  full_name: string;
+};
+
 declare type Chat = {
   summary: string;
   topic: string;
@@ -17,6 +21,7 @@ declare type Chat = {
   session_id: string;
   user_id: string;
   created_at: string;
+  user: Detail;
 };
 
 declare type PostChat = {
@@ -48,6 +53,7 @@ declare type GetChat = {
   start_time: string;
   end_time: string;
   created_at: string;
+  user: Detail[];
   ai_results: Message[];
 };
 
