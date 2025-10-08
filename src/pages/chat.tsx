@@ -12,7 +12,7 @@ const Chat = () => {
     <ChatInterface />
   ) : (
     <div className="flex h-full w-full flex-col items-start justify-between p-5">
-      <div className="mx-auto flex h-fit w-full flex-col justify-center">
+      <div className="mx-auto flex h-full w-full flex-col items-center justify-center">
         <div className="font-semibold text-xl md:text-2xl">Hello there!</div>
         <div className="text-xl text-zinc-500 md:text-2xl">Ready for your culture assessment?</div>
       </div>

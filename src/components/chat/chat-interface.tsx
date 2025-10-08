@@ -73,7 +73,14 @@ const ChatInterface = () => {
     setMessage("");
     setLoading(true);
 
-    const result = await callWebhook(chat_session_id, userMessage.content, user?.company_id || "");
+    const userType = user?.is_role_model === true ? "role_model" : user?.role || "";
+
+    const result = await callWebhook(
+      chat_session_id,
+      userMessage.content,
+      user?.company_id || "",
+      userType,
+    );
 
     if (result.success) {
       const chatContent = result.data?.[0]?.output?.chat || "No response received";
@@ -116,7 +123,7 @@ const ChatInterface = () => {
           >
             {message.role === "user" ? (
               <img
-                src="https://ui.shadcn.com/avatars/01.png"
+                src="https://ui.shadcn.com/avatars/04.png"
                 alt="avatar"
                 className="order-2 size-9 shrink-0 rounded-full border object-cover"
               />
@@ -128,7 +135,7 @@ const ChatInterface = () => {
             <span
               className={cn("rounded-lg px-4 py-2 text-sm", {
                 "order-2 bg-muted text-left": message.role === "assistant",
-                "order-1 bg-primary text-right text-white dark:text-black": message.role === "user",
+                "order-1 bg-primary text-right text-white": message.role === "user",
               })}
             >
               {message.isLoading ? (

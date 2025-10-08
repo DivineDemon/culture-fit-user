@@ -43,6 +43,7 @@ declare type LoginResponse = {
   employee_id: string;
   role: string;
   company_id: string;
+  is_role_model: boolean;
 };
 
 declare type GetChat = {
