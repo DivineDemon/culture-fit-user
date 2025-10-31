@@ -51,6 +51,7 @@ const AppSidebar = () => {
   const { data } = useGetChatsQuery({});
   const [createChat, { isLoading }] = usePostChatMutation();
   const { chat_session_id } = useSelector((state: RootState) => state.global);
+  const User  = useSelector((state: RootState) => state.global.user);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [summary, setSummary] = useState("");
@@ -152,7 +153,7 @@ const AppSidebar = () => {
                     <span className="flex w-fit items-end rounded-full bg-primary p-2">
                       <User2 className="size-4" />
                     </span>
-                    {data?.[0]?.user?.full_name}
+                    {User?.full_name}
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
